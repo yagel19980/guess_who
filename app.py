@@ -38,6 +38,37 @@ def get_chosen():
         "image": player.image
     })
 
+@app.route("/players", methods=["POST"])
+def add_player():
+    data = request.get_json()
+    name = data.get("name")
+    image = data.get("image")
+
+    if not name or not image:
+        abort(400, "Both name and image are required.")
+
+    new_player = Player(name=name, image=image)
+    db.session.add(new_player)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Player added",
+        "id": new_player.id
+    })
+
+
+@app.route("/players/<int:player_id>", methods=["DELETE"])
+def remove_player(player_id):
+    player = Player.query.get(player_id)
+    if not player:
+        abort(404, "Player not found")
+
+    db.session.delete(player)
+    db.session.commit()
+
+    return jsonify({"message": "Player removed"})
+
+
 if __name__ == "__main__":
     with app.app_context():
         init_db()
